@@ -7,7 +7,7 @@ import numpy
 import sklearn
 from sklearn import preprocessing
 
-def load(ppath,fname,groups,npt,nnt,npv,nnv,nptt,nntt,norm=0,rng_seed=1):  
+def load(ppath,fname,groups,npt,nnt,nptt,nntt,norm=0,rng_seed=1):  
     """
     loading data from specified source
     rng_seed: random number generator seed, rng_seed=1 by default
@@ -31,23 +31,15 @@ def load(ppath,fname,groups,npt,nnt,npv,nnv,nptt,nntt,norm=0,rng_seed=1):
     Xtrain=numpy.vstack((positive[:npt],negative[:nnt]))
     Ytrain=numpy.hstack((numpy.ones(npt),numpy.zeros(nnt)))
     
-    
-    Xvalid=numpy.vstack((positive[npt:npt+npv],negative[nnt:nnt+nnv]))
-    Yvalid=numpy.hstack((numpy.ones(npv),numpy.ones(nnv)))
-
-    Xtest=numpy.vstack((positive[npt+npv:npt+npv+nptt],negative[nnt+nnv:nnt+nnv+nntt]))
+    Xtest=numpy.vstack((positive[npt:npt+nptt],negative[nnt:nnt+nntt]))
     Ytest=numpy.hstack((numpy.ones(nptt),numpy.zeros(nntt)))
 
-    
-    Xtrain=Xtrain[:,2,...]
-    Xvalid=Xvalid[:,2,...]
-    Xtest=Xtest[:,2,...]
+
     #normalize train, valid and test set
     if norm==0:
        pass
     elif norm==1:
        Xtrain=stand_norm(Xtrain)
-       Xvalid=stand_norm(Xvalid)
        Xtest=stand_norm(Xtest)
 
     #randomly shuffle and mixing data
@@ -58,10 +50,9 @@ def load(ppath,fname,groups,npt,nnt,npv,nnv,nptt,nntt,norm=0,rng_seed=1):
     #flatten into 1D array 
     
     Xtrain=fllat(Xtrain)
-    Xvalid=fllat(Xvalid)
     Xtest=fllat(Xtest)
 
-    return Xtrain,Ytrain, Xvalid, Yvalid, Xtest,Ytest
+    return Xtrain,Ytrain, Xtest,Ytest
 
 
 #other useful functions 
@@ -114,7 +105,7 @@ def norm_norm(A):
     l1 norm of input data (scikit learn)
     A: image data
     """
-    logger.info("do l1/l2 norm normalization...")
+    print("do l1/l2 norm normalization...")
     sh=A.shape
     A=A.reshape(sh[0],sh[1],-1)
     for i in range(sh[0]):
@@ -130,7 +121,7 @@ def global_contrast_norm(A, scale=1.0,min_divisor=1e-8):
     A: image data
     """
 
-    logger.info("do global contrast normalization...")
+    print("do global contrast normalization...")
     A = A - A.mean(axis=1)[:, numpy.newaxis]
 
     normalizers = numpy.sqrt((A ** 2).sum(axis=1)) / scale
@@ -138,4 +129,22 @@ def global_contrast_norm(A, scale=1.0,min_divisor=1e-8):
 
     A /= normalizers[:, numpy.newaxis]
 
+    return A
+
+def scaler(A):
+    """
+    scale data on to [0,1]
+    A: image data
+    """
+    print('scale data on to [0,1]')
+    sh=A.shape
+    A =A.reshape(sh[0],sh[1],-1) #flat feature of each channel        
+    
+    #scale each channel to  [0,1]
+    
+    scale=preprocessing.MinMaxScaler(feature_range=(0,1))
+    for i in range(sh[0]):
+        A[i]=scale.fit_transform(A[i])
+
+    A=A.reshape(sh)
     return A
