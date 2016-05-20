@@ -4,6 +4,8 @@ import os
 import sys
 import h5py
 import numpy
+import logging
+logging.basicConfig(level=logging.INFO)
 import sklearn
 from sklearn import preprocessing
 
@@ -19,7 +21,7 @@ def load(ppath,fname,groups,npt,nnt,nptt,nntt,norm=0,rng_seed=1):
     """
     #read in data file 
     ff=os.path.join(ppath,fname)
-    print "ready for data file..." +ff
+    logging.info("ready for data file...%s" %ff)
     data=h5py.File(ff,'r')
 
     positive=data[groups[0]]
@@ -41,7 +43,7 @@ def load(ppath,fname,groups,npt,nnt,nptt,nntt,norm=0,rng_seed=1):
     elif norm==1:
        Xtrain=stand_norm(Xtrain)
        Xtest=stand_norm(Xtest)
-    elif norm=2:
+    elif norm==2:
        Xtrain=norm_norm(Xtrain)
        Xtest=norm_norm(Xtest)       
 
@@ -108,7 +110,6 @@ def norm_norm(A):
     l1 norm of input data (scikit learn)
     A: image data
     """
-    print("do l1/l2 norm normalization...")
     sh=A.shape
     A=A.reshape(sh[0],sh[1],-1)
     for i in range(sh[0]):

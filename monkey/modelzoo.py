@@ -1,6 +1,8 @@
 #model zoo, a collection of all interesting models for images classification from scikit learn
 import time
 import sklearn
+import logging
+logging.basicConfig(level=logging.INFO)
 from sklearn import metrics as metrics
 from sklearn import cross_validation
 import numpy
@@ -15,25 +17,25 @@ def lgr(Xtrain,Ytrain):
     #build model
     lgr_model=lm.LogisticRegression(C=5, penalty='l2',max_iter=1000,random_state=0,solver="liblinear")
 
-    print "----------------------------------------------"
-    print "model fitting"
+    logging.info ("----------------------------------------------")
+    logging.info ("model fitting")
     start=time.clock()
 
     #lgr_model.fit(Xtrain, Ytrain)
     #cross validation KFold
     scores = cross_validation.cross_val_score(lgr_model,Xtrain,Ytrain,cv=3)
-    print ("3 fold cross validation accuracy ")
-    print scores
+    logging.info ("3 fold cross validation accuracy ")
+    logging.info (scores)
     score=numpy.mean(scores)
-    print ("cross validation accuracy:  %0.5f%%" %(score*100))
+    logging.info ("cross validation accuracy:  %0.5f%%" %(score*100))
 
     lgr_model.fit(Xtrain,Ytrain)
     params=lgr_model.get_params
-    print "model trained prameter"
-    print params
+    logging.info ("model trained prameter")
+    logging.info (params)
 
     end=time.clock() 
-    print ("training model took %f seconds" %(end-start))
+    logging.info ("training model took %f seconds" %(end-start))
 
     return  lgr_model
 
@@ -47,25 +49,25 @@ def dtr(Xtrain,Ytrain):
     tree_model=tree.DecisionTreeClassifier(criterion='entropy',max_features='sqrt',max_depth=None,min_samples_split=10,min_samples_leaf=24,min_weight_fraction_leaf=0.2, \
                                            max_leaf_nodes=240,random_state=0)
     
-    print "-----------------------------------"
-    print "model fitting"
+    logging.info ("-----------------------------------")
+    logging.info ("model fitting")
 
     start=time.clock()
     #tree_model.fit(Xtrain, Ytrain)
 
     scores = cross_validation.cross_val_score(tree_model,Xtrain,Ytrain,cv=3)
-    print ("3 fold cross validation accuracy ")
-    print scores
+    logging.info ("3 fold cross validation accuracy ")
+    logging.info (scores)
     score=numpy.mean(scores)
-    print ("cross validation accuracy:  %0.5f%%" %(score*100))
+    logging.info ("cross validation accuracy:  %0.5f%%" %(score*100))
     
     tree_model.fit(Xtrain,Ytrain)
     params=tree_model.get_params
-    print "trained decision tree model parameters"
-    print params
+    logging.info ("trained decision tree model parameters")
+    logging.info (params)
 
     end=time.clock()
-    print("training model took %f seconds" %(end-start))
+    logging.info("training model took %f seconds" %(end-start))
 
     return tree_model
 
@@ -77,25 +79,25 @@ def knn(Xtrain,Ytrain):
     #build neighbors
     K_model=neighbors.KNeighborsClassifier(n_neighbors=16,weights='distance',algorithm='auto',leaf_size=16,p=2,metric='minkowski')
 
-    print "-----------------------------------"
-    print "model fitting"
+    logging.info ("-----------------------------------")
+    logging.info ("model fitting")
     
     start=time.clock()
     #K_model.fit(Xtrain,Ytrain)
 
     scores = cross_validation.cross_val_score(K_model,Xtrain,Ytrain,cv=3)
-    print ("3 fold cross validation accuracy ")
-    print scores
+    logging.info ("3 fold cross validation accuracy ")
+    logging.info (scores)
     score=numpy.mean(scores)
-    print ("cross validation accuracy:  %0.5f%%" %(score*100))
+    logging.info ("cross validation accuracy:  %0.5f%%" %(score*100))
     
     K_model.fit(Xtrain,Ytrain)
     params=K_model.get_params
-    print "trained KNN model parameters"
-    print params
+    logging.info ("trained KNN model parameters")
+    logging.info (params)
 
     end=time.clock()
-    print("training model took %f seconds" %(end-start))
+    logging.info("training model took %f seconds" %(end-start))
     
     return K_model
 
@@ -107,23 +109,23 @@ def svm_linear(Xtrain,Ytrain):
     #build models
     linear_model=svm.LinearSVC(penalty='l2',loss='hinge',multi_class='ovr',C=5.0,random_state=0,max_iter=1000)
 
-    print "-----------------------------------"
-    print "model fitting"
+    logging.info ("-----------------------------------")
+    logging.info ("model fitting")
     start=time.clock()
     #linear_model.fit(Xtrain, Ytrain)
     scores = cross_validation.cross_val_score(linear_model,Xtrain,Ytrain,cv=3)
-    print ("3 fold cross validation accuracy ")
-    print scores
+    logging.info ("3 fold cross validation accuracy ")
+    logging.info (scores)
     score=numpy.mean(scores)
-    print ("cross validation accuracy:  %0.5f%%" %(score*100))
+    logging.info ("cross validation accuracy:  %0.5f%%" %(score*100))
 
     linear_model.fit(Xtrain,Ytrain)
     params=linear_model.get_params
-    print "trained linear model parameters"
-    print params
+    logging.info ("trained linear model parameters")
+    logging.info (params)
 
     end=time.clock()
-    print("training model took %f seconds" %(end-start))
+    logging.info("training model took %f seconds" %(end-start))
 
     return linear_model
 
@@ -135,26 +137,26 @@ def svm_nonlinear(Xtrain,Ytrain):
     #build models
     nonlinear_model=svm.SVC(kernel='poly',degree=4,gamma=0.001,coef0=1, cache_size=200,max_iter=1000,random_state=0)
 
-    print "-----------------------------------"
-    print "model fitting"
+    logging.info ("-----------------------------------")
+    logging.info ("model fitting")
     
     start=time.clock()
     #nonlinear_model.fit(Xtrain,Ytrain)
 
     scores = cross_validation.cross_val_score(nonlinear_model,Xtrain,Ytrain,cv=3)
-    print ("3 fold cross validation accuracy ")
-    print scores
+    logging.info ("3 fold cross validation accuracy ")
+    logging.info (scores)
     score=numpy.mean(scores)
-    print ("cross validation accuracy:  %0.5f%%" %(score*100))
+    logging.info ("cross validation accuracy:  %0.5f%%" %(score*100))
 
     nonlinear_model.fit(Xtrain,Ytrain)
     params=nonlinear_model.get_params
-    print "trained  non linear model parameters"
-    print params
+    logging.info ("trained  non linear model parameters")
+    logging.info (params)
  
     end=time.clock()
 
-    print("training model took %f seconds" %(end-start)) 
+    logging.info("training model took %f seconds" %(end-start)) 
 
     return nonlinear_model
     
@@ -172,27 +174,27 @@ def rbm(Xtrain,Ytrain):
     logistic_model=linear_model.LogisticRegression(C=10)
     classifier=Pipeline(steps=[('rbm',rbm_model),('logistic',logistic_model)])
 
-    print "---------------------------------------------"
-    print "training model"
+    logging.info ("---------------------------------------------")
+    logging.info ("training model")
     
     start=time.clock()
     #classifier.fit(Xtrain,Ytrain)
 
     scores = cross_validation.cross_val_score(classifier,Xtrain,Ytrain,cv=3)
-    print ("3 fold cross validation accuracy ")
-    print scores
+    logging.info ("3 fold cross validation accuracy ")
+    logging.info (scores)
     score=numpy.mean(scores)
-    print ("cross validation accuracy:  %0.5f%%" %(score*100))
+    logging.info ("cross validation accuracy:  %0.5f%%" %(score*100))
 
     classifier.fit(Xtrain,Ytrain)
     params=classifier.get_params
     #scores=lgr_model.score(Xtrain,Ytrain)
-    #print ("train set accuracy:  %0.5f%%" %(scores*100))
-    print "model trained prameter"
-    print params
+    #logging.info ("train set accuracy:  %0.5f%%" %(scores*100))
+    logging.info ("model trained prameter")
+    logging.info (params)
 
     end=time.clock()
-    print("training model took %s seconds" %(end-start))
+    logging.info("training model took %s seconds" %(end-start))
 
     return  classifier
 
@@ -201,27 +203,27 @@ def radf(Xtrain, Ytrain):
     from sklearn.ensemble import RandomForestClassifier
     rf_model=RandomForestClassifier(n_estimators=16,criterion='entropy',max_features='sqrt',bootstrap=True,oob_score=True)
 
-    print "---------------------------------------------"
-    print "training model"
+    logging.info ("---------------------------------------------")
+    logging.info ("training model")
 
     start=time.clock()
     #classifier.fit(Xtrain,Ytrain)
 
     scores = cross_validation.cross_val_score(rf_model,Xtrain,Ytrain,cv=3)
-    print ("3 fold cross validation accuracy ")
-    print scores
+    logging.info ("3 fold cross validation accuracy ")
+    logging.info (scores)
     score=numpy.mean(scores)
-    print ("cross validation accuracy:  %0.5f%%" %(score*100))
+    logging.info ("cross validation accuracy:  %0.5f%%" %(score*100))
 
     rf_model.fit(Xtrain,Ytrain)
     params=rf_model.get_params
     #scores=lgr_model.score(Xtrain,Ytrain)
-    #print ("train set accuracy:  %0.5f%%" %(scores*100))
-    print "model trained prameter"
-    print params
+    #logging.info ("train set accuracy:  %0.5f%%" %(scores*100))
+    logging.info("model trained prameter")
+    logging.info (params)
 
     end=time.clock()
-    print("training model took %s seconds" %(end-start))
+    logging.info("training model took %s seconds" %(end-start))
 
     return  rf_model
 

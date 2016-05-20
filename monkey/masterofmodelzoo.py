@@ -3,6 +3,9 @@ import os
 import sys
 import numpy
 import sklearn
+import logging
+logging.basicConfig(level=logging.INFO,filename="LOG.log",\
+       filemode='w',format="%(asctime)-5s %(message)s")
 import warehouse
 import modelzoo
 
@@ -36,63 +39,62 @@ Xtrain, Ytrain, Xtest, Ytest = warehouse.load(
       norm=2,rng_seed=2)
 
 #data information
-print "Training, Testing data size"
-print Xtrain.shape[0], Xtest.shape[0]
+logging.info("Training, Testing data size %d, %d" %(Xtrain.shape[0], Xtest.shape[0]))
 
 #---------------------------------------------------------
 #logistic regression
 
 if model=="lgr":
-   print "UseModel: logistic regression" 
+   logging.info("UseModel: logistic regression") 
    mmodel=modelzoo.lgr(Xtrain,Ytrain)
    Ypredict=mmodel.predict(Xtest)
    scores=mmodel.score(Xtest,Ytest)
-   print("testing set accuracy:  %0.5f%%" %(scores*100))
+   logging.info("testing set accuracy:  %0.5f%%" %(scores*100))
 
 #decision tree
 
 elif model=="dtr":
-  print "UseModel: decision tree"
+  logging.info("UseModel: decision tree")
   mmodel=modelzoo.dtr(Xtrain,Ytrain)
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
-  print("testing set accuracy:  %0.5f%%" %(scores*100))
+  logging.info("testing set accuracy:  %0.5f%%" %(scores*100))
 
 #k nearest neighbor 
 elif model=="knn":
-  print "UseModel: K nearest neighbors"
+  logging.info("UseModel: K nearest neighbors")
   mmodel=modelzoo.knn(Xtrain,Ytrain) 
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
-  print("testing set accuracy:  %0.5f%%" %(scores*100))
+  logging.info("testing set accuracy:  %0.5f%%" %(scores*100))
 
 #support vector machine, linear kernel
 elif model=="svm_linear":
-  print "UseModel: linear kernel support vector machine"
+  logging.info ("UseModel: linear kernel support vector machine")
   mmodel=modelzoo.svm_linear(Xtrain,Ytrain)
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
-  print("testing set accuracy:  %0.5f%%" %(scores*100))
+  logging.info("testing set accuracy:  %0.5f%%" %(scores*100))
  
 #support vector machine, non linear kernel
 elif model=="svm_nonlinear":
-  print "UseModle:  non linear kernel support vector machine"
+  logging.info("UseModle:  non linear kernel support vector machine")
   mmodel=modelzoo.svm_nonlinear(Xtrain,Ytrain) 
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
-  print("testing set accuracy:  %0.5f%%" %(scores*100))
+  logging.info("testing set accuracy:  %0.5f%%" %(scores*100))
 
 #restricted boltzman machine
 elif model=="rbm":
-  print "UseModel: restricted Boltzman machine"
+  logging.info ("UseModel: restricted Boltzman machine")
   mmodel=modelzoo.rbm(Xtrain,Ytrain)
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
-  print("testing set accuracy:  %0.5f%%" %(scores*100))
+  logging.info("testing set accuracy:  %0.5f%%" %(scores*100))
 
 elif model=="radf":
-  print "UseModel: random forest"
+  logging.info("UseModel: random forest")
   mmodel=modelzoo.radf(Xtrain,Ytrain)
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
-  print("testing set accuracy:  %0.5f%%" %(scores*100))  
+  logging.info("testing set accuracy:  %0.5f%%" %(scores*100))  
