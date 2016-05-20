@@ -41,6 +41,9 @@ def load(ppath,fname,groups,npt,nnt,nptt,nntt,norm=0,rng_seed=1):
     elif norm==1:
        Xtrain=stand_norm(Xtrain)
        Xtest=stand_norm(Xtest)
+    elif norm=2:
+       Xtrain=norm_norm(Xtrain)
+       Xtest=norm_norm(Xtest)       
 
     #randomly shuffle and mixing data
     #Xtrain,Ytrain=rand_shuffle(Xtrain,Ytrain) 
