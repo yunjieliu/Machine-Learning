@@ -32,7 +32,7 @@ Xtrain, Ytrain, Xtest, Ytest = warehouse.load(
       fname="fronts_all.h5",
       groups=['Front','NonFront'],
       npt=1000,nnt=1000,nptt=1000,nntt=1000,
-      norm=0,rng_seed=2)
+      norm=2,rng_seed=2)
 
 #data information
 print "Training, Testing data size"
@@ -52,7 +52,7 @@ if model=="lgr":
 
 elif model=="dtr":
   print "UseModel: decision tree"
-  mmodel=modelzoo.dtr(Xtrain,Ytrain,Xvalid,Yvalid)
+  mmodel=modelzoo.dtr(Xtrain,Ytrain)
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
   print("testing set accuracy:  %0.5f%%" %(scores*100))
@@ -60,7 +60,7 @@ elif model=="dtr":
 #k nearest neighbor 
 elif model=="knn":
   print "UseModel: K nearest neighbors"
-  mmodel=modelzoo.knn(Xtrain,Ytrain,Xvalid,Yvalid) 
+  mmodel=modelzoo.knn(Xtrain,Ytrain) 
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
   print("testing set accuracy:  %0.5f%%" %(scores*100))
@@ -68,7 +68,7 @@ elif model=="knn":
 #support vector machine, linear kernel
 elif model=="svm_linear":
   print "UseModel: linear kernel support vector machine"
-  mmodel=modelzoo.svm_linear(Xtrain,Ytrain,Xvalid,Yvalid)
+  mmodel=modelzoo.svm_linear(Xtrain,Ytrain)
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
   print("testing set accuracy:  %0.5f%%" %(scores*100))
@@ -76,7 +76,7 @@ elif model=="svm_linear":
 #support vector machine, non linear kernel
 elif model=="svm_nonlinear":
   print "UseModle:  non linear kernel support vector machine"
-  mmodel=modelzoo.svm_nonlinear(Xtrain,Ytrain,Xvalid,Yvalid) 
+  mmodel=modelzoo.svm_nonlinear(Xtrain,Ytrain) 
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
   print("testing set accuracy:  %0.5f%%" %(scores*100))
@@ -84,7 +84,7 @@ elif model=="svm_nonlinear":
 #restricted boltzman machine
 elif model=="rbm":
   print "UseModel: restricted Boltzman machine"
-  mmodel=modelzoo.rbm(Xtrain,Ytrain,Xvalid,Yvalid)
+  mmodel=modelzoo.rbm(Xtrain,Ytrain)
   Ypredict=mmodel.predict(Xtest)
   scores=mmodel.score(Xtest,Ytest)
   print("testing set accuracy:  %0.5f%%" %(scores*100))
