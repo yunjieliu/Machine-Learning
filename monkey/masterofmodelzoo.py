@@ -21,7 +21,8 @@ if(len(sys.argv) < 2): #first argument will be 'self'
         + "knn: k nearest neighbor \n"
         + "svm_linear: support vector machine with linear kernel \n"
         + "svm_nonlinear: support vecor machine with non linear kernel \n"
-        + "rbm: restricted Boltzman machine feature extractor +logistic regression classifier] \n")
+        + "rbm: restricted Boltzman machine feature extractor +logistic regression classifier] \n"
+        + "radf: random forest classifier \n" )
   sys.exit(0)
 
 model= sys.argv[1]
@@ -89,3 +90,9 @@ elif model=="rbm":
   scores=mmodel.score(Xtest,Ytest)
   print("testing set accuracy:  %0.5f%%" %(scores*100))
 
+elif model=="radf":
+  print "UseModel: random forest"
+  mmodel=modelzoo.radf(Xtrain,Ytrain)
+  Ypredict=mmodel.predict(Xtest)
+  scores=mmodel.score(Xtest,Ytest)
+  print("testing set accuracy:  %0.5f%%" %(scores*100))  

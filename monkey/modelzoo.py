@@ -195,3 +195,33 @@ def rbm(Xtrain,Ytrain):
     print("training model took %s seconds" %(end-start))
 
     return  classifier
+
+def radf(Xtrain, Ytrain):
+    #class sklearn.ensemble.RandomForestClassifier(n_estimators=10, criterion='gini', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features='auto', max_leaf_nodes=None, bootstrap=True, oob_score=False, n_jobs=1, random_state=None, verbose=0, warm_start=False, class_weight=None
+    from sklearn.ensemble import RandomForestClassifier
+    rf_model=RandomForestClassifier(n_estimators=16,criterion='entropy',max_features='sqrt',bootstrap=True,oob_score=True)
+
+    print "---------------------------------------------"
+    print "training model"
+
+    start=time.clock()
+    #classifier.fit(Xtrain,Ytrain)
+
+    scores = cross_validation.cross_val_score(rf_model,Xtrain,Ytrain,cv=3)
+    print ("3 fold cross validation accuracy ")
+    print scores
+    score=numpy.mean(scores)
+    print ("cross validation accuracy:  %0.5f%%" %(score*100))
+
+    rf_model.fit(Xtrain,Ytrain)
+    params=rf_model.get_params
+    #scores=lgr_model.score(Xtrain,Ytrain)
+    #print ("train set accuracy:  %0.5f%%" %(scores*100))
+    print "model trained prameter"
+    print params
+
+    end=time.clock()
+    print("training model took %s seconds" %(end-start))
+
+    return  rf_model
+
