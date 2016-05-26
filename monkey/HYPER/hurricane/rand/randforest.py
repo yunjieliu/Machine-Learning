@@ -18,22 +18,22 @@ Xtrain, Ytrain,Xtest, Ytest = warehouse.load(
       ppath="/global/project/projectdirs/nervana/yunjie/climatedata",
       fname="hurricanes.h5",
       groups=['1','0'],
-      npt=1000,nnt=1000,nptt=1000,nntt=1000,
+      npt=8000,nnt=8000,nptt=2000,nntt=2000,
       norm=0,rng_seed=2)
 
 
 #build random forest classifier
-def hyper_opt(ne,ms,mw,ml):
+def hyper_opt(ne,ms,dm,fe):
     """
     optimize parameter
     ne: number of trees in the forest   
     ms: minimal number of example required to split an internal node
-    mw: The minimum weighted fraction of the input samples required to be at a leaf node
-    ml: The minimum number of samples in newly created leaves.
+    dm: max depth of tree
+    fe: number of feature for finding spliting
     """
-    rf_model=RandomForestClassifier(n_estimators=ne,criterion='entropy',max_features='sqrt', \
-                                random_state=0,max_leaf_nodes=None,min_weight_fraction_leaf=mw,\
-                                min_samples_leaf=ml,min_samples_split=ms,max_depth=None,bootstrap=True,oob_score=True)
+    rf_model=RandomForestClassifier(n_estimators=ne,criterion='entropy',max_features=fe, \
+                                random_state=0,max_leaf_nodes=None,\
+                                min_samples_split=ms,max_depth=dm,bootstrap=True,oob_score=True)
 
     scores = cross_validation.cross_val_score(rf_model,Xtrain,Ytrain,cv=3)
     score=numpy.mean(scores)
@@ -45,6 +45,6 @@ def hyper_opt(ne,ms,mw,ml):
 def main(job_id,params):
     print "Anything printed here will end up in the output directory for job #%d" %job_id
     print params
-    accuracy=hyper_opt(params['N'],params['MS'],params['MW'],params['ML'])
+    accuracy=hyper_opt(params['N'],params['M'],params['D'],params['F'])
 
     return accuracy
