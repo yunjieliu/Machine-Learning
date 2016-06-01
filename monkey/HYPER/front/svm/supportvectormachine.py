@@ -30,7 +30,7 @@ def hyper_opt(Cc,Sc):
     Cc: regularization parameter
     Sc: intercept scaling 
     """
-    linear_model=svm.LinearSVC(penalty='l2',loss='squared_hinge',multi_class='ovr',C=Cc, \
+    linear_model=svm.LinearSVC(penalty='l2',loss='hinge',multi_class='ovr',C=Cc, \
                  fit_intercept=True, intercept_scaling=Sc,random_state=0,max_iter=1000,tol=0.0001)
 
 
@@ -38,13 +38,13 @@ def hyper_opt(Cc,Sc):
     score=numpy.mean(scores)
     print ("cross validation average accuracy:  %f%%" %(score*100))
 
-    return score
+    return (-1.0)*score #minimize
 
 
 def main(job_id,params):
     print "Anything printed here will end up in the output directory for job #%d" %job_id
     print params
-    accuracy=hyper_opt(params['C'],params['S'])
+    accuracy=hyper_opt(float(params['C']),int(params['S']))
 
     return accuracy
 
