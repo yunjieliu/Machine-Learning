@@ -37,16 +37,12 @@ def hyper_opt(Cc,Sc):
     score=numpy.mean(scores)
     print ("cross validation average accuracy:  %f%%" %(score*100))
     
-    return score 
+    return (-1.0)*score  #minimize
 
 
 def main(job_id,params):
     print "Anything printed here will end up in the output directory for job #%d" %job_id
     print params
-    import time
-    start=time.clock()
-    accuracy=hyper_opt(params['C'],params['S'])
-    end=time.closk() 
-    print "process takes time(s)  %f" %(end-start)
+    accuracy=hyper_opt(float(params['C']),int(params['S']))
 
     return accuracy
