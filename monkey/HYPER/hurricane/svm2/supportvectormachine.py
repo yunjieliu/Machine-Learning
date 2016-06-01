@@ -18,7 +18,7 @@ Xtrain, Ytrain,Xtest, Ytest = warehouse.load(
       ppath="/global/project/projectdirs/nervana/yunjie/climatedata",
       fname="hurricanes.h5",
       groups=['1','0'],
-      npt=1000,nnt=1000,nptt=1000,nntt=1000,
+      npt=8000,nnt=8000,nptt=2000,nntt=2000,
       norm=0,rng_seed=2)
 
 
@@ -36,13 +36,13 @@ def hyper_opt(Cc,ga):
     score=numpy.mean(scores)
     print ("cross validation average accuracy:  %f%%" %(score*100))
 
-    return score
+    return (-1.0)*score #minimize
 
 
 def main(job_id,params):
     print "Anything printed here will end up in the output directory for job #%d" %job_id
     print params
-    accuracy=hyper_opt(params['C'],params['G'])
+    accuracy=hyper_opt(float(params['C']),float(params['G']))
 
     return accuracy
 
