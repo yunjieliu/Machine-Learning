@@ -18,7 +18,7 @@ Xtrain, Ytrain,  Xtest, Ytest = warehouse.load(
       ppath="/global/project/projectdirs/nervana/yunjie/climatedata",
       fname="hurricanes.h5",
       groups=['1','0'],
-      npt=1000,nnt=1000,nptt=1000,nntt=1000,
+      npt=8000,nnt=8000,nptt=2000,nntt=2000,
       norm=0,rng_seed=2)
 
 
@@ -31,16 +31,17 @@ def hyper_opt(nn,ls):
     ls: leaf size
     """
     K_model=neighbors.KNeighborsClassifier(n_neighbors=nn,leaf_size=ls,algorithm='auto',\
-                      metric='minkowski', p=2,weights='uniform')
+                      metric='minkowski', p=2,weights='distance')
 
     scores = cross_validation.cross_val_score(K_model,Xtrain,Ytrain,cv=3)
     #here we use 3 fold cross validation
     score=numpy.mean(scores)
     print ("cross validation average accuracy:  %f%%" %(score*100))
-    return score
+    #Spearmint by default minimize objective function, here our object is to minimize negative validation accuracy
+    return (-1.0)*score
 
 def main(job_id,params):
     print "Anything printed here will end up in the output directory for job #%d" %job_id
     print params
-    accuracy=hyper_opt(params['nn'],params['ls'])
+    accuracy=hyper_opt(int(params['nn']),int(params['ls']))
     return accuracy
