@@ -30,16 +30,17 @@ def hyper_opt(nn,ls):
     ls: leaf size
     """
     K_model=neighbors.KNeighborsClassifier(n_neighbors=nn,leaf_size=ls,algorithm='auto',\
-                      metric='minkowski', p=2,weights='uniform')
+                      metric='minkowski', p=2,weights='distance')
 
     scores = cross_validation.cross_val_score(K_model,Xtrain,Ytrain,cv=3)
     #here we use 3 fold cross validation
     score=numpy.mean(scores)
     print ("cross validation average accuracy:  %f%%" %(score*100))
-    return score
+
+    return (-1.0)*score  #minimize
 
 def main(job_id,params):
     print "Anything printed here will end up in the output directory for job #%d" %job_id
     print params
-    accuracy=hyper_opt(params['nn'],params['ls'])
+    accuracy=hyper_opt(int(params['nn']),int(params['ls']))
     return accuracy
