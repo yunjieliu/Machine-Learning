@@ -23,28 +23,26 @@ Xtrain, Ytrain,Xtest, Ytest = warehouse.load(
 
 
 #build random forest classifier
-def hyper_opt(ne,ms,dm,fe):
+def hyper_opt(ne,ms):
     """
     optimize parameter
     ne: number of trees in the forest   
     ms: minimal number of example required to split an internal node
-    dm: max depth of tree
-    fe: number of feature for finding spliting
     """
-    rf_model=RandomForestClassifier(n_estimators=ne,criterion='entropy',max_features=fe, \
-                                random_state=0,max_leaf_nodes=None,\
-                                min_samples_split=ms,max_depth=dm,bootstrap=True,oob_score=True)
+    rf_model=RandomForestClassifier(n_estimators=ne,criterion='entropy',max_features='sqrt', \
+                                random_state=0,max_leaf_nodes=None,n_jobs=1,\
+                                min_samples_split=ms,max_depth=None,bootstrap=True,oob_score=True)
 
     scores = cross_validation.cross_val_score(rf_model,Xtrain,Ytrain,cv=3)
     score=numpy.mean(scores)
     print ("cross validation average accuracy:  %f%%" %(score*100))
 
-    return score
+    return (-1.0)*score #minimize
 
 
 def main(job_id,params):
     print "Anything printed here will end up in the output directory for job #%d" %job_id
     print params
-    accuracy=hyper_opt(params['N'],params['M'],params['D'],params['F'])
+    accuracy=hyper_opt(int(params['N']),int(params['M']))
 
     return accuracy
