@@ -13,6 +13,7 @@ Logistic Regression
 def lgr(Xtrain,Ytrain):
 
     #class sklearn.linear_model.LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=1.0, fit_intercept=True, intercept_scaling=1, class_weight=None, random_state=None, solver='liblinear', max_iter=100, multi_class='ovr', verbose=0, warm_start=False, n_jobs=1)
+    #n_jobs parameter  Number of CPU cores used during the cross-validation loop. If given a value of -1, all cores are used.
     from sklearn import linear_model  as lm
     #build model
     lgr_model=lm.LogisticRegression(C=5, penalty='l2',max_iter=1000,random_state=0,solver="liblinear")
@@ -73,7 +74,7 @@ def dtr(Xtrain,Ytrain):
 
 def knn(Xtrain,Ytrain):
     #class sklearn.neighbors.KNeighborsClassifier(n_neighbors=5, weights='uniform', algorithm='auto', leaf_size=30, p=2, metric='minkowski', metric_params=None, n_jobs=1, **kwargs)
-
+    #The number of parallel jobs to run for neighbors search. If -1, then the number of jobs is set to the number of CPU cores. Doesnotaffect fit method. 
     from sklearn import neighbors
     
     #build neighbors
@@ -200,6 +201,8 @@ def rbm(Xtrain,Ytrain):
 
 def radf(Xtrain, Ytrain):
     #class sklearn.ensemble.RandomForestClassifier(n_estimators=10, criterion='gini', max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features='auto', max_leaf_nodes=None, bootstrap=True, oob_score=False, n_jobs=1, random_state=None, verbose=0, warm_start=False, class_weight=None
+
+    #The number of jobs to run in parallel for both fit and predict. If -1, then the number of jobs is set to the number of cores.
     from sklearn.ensemble import RandomForestClassifier
     rf_model=RandomForestClassifier(n_estimators=16,criterion='entropy',max_features='sqrt',bootstrap=True,oob_score=True)
 

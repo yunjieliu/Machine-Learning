@@ -19,7 +19,7 @@ Xtrain, Ytrain,  Xtest, Ytest = warehouse.load(
       fname="atmospheric_river_us+eu+landsea_sep10.h5",
       groups=['AR','Non_AR'],
       npt=5800,nnt=5500,nptt=1000,nntt=1000,
-      norm=0,rng_seed=2)
+      norm=2,rng_seed=2)
 
 
 def hyper_opt(Cc,Sc):

@@ -19,7 +19,7 @@ Xtrain, Ytrain,Xtest, Ytest = warehouse.load(
       fname="hurricanes.h5",
       groups=['1','0'],
       npt=8000,nnt=8000,nptt=2000,nntt=2000,
-      norm=0,rng_seed=2)
+      norm=2,rng_seed=2)
 
 
 #build support vector machine model

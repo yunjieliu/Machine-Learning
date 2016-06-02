@@ -19,7 +19,7 @@ Xtrain, Ytrain,  Xtest, Ytest = warehouse.load(
       fname="fronts_all.h5",
       groups=['Front','NonFront'],
       npt=4600,nnt=4600,nptt=1000,nntt=1000,
-      norm=0,rng_seed=2)
+      norm=2,rng_seed=2)
 
 
 #build support vector machine model
