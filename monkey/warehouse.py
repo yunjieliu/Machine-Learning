@@ -48,9 +48,8 @@ def load(ppath,fname,groups,npt,nnt,nptt,nntt,norm=0,rng_seed=1):
        Xtest=norm_norm(Xtest)       
 
     #randomly shuffle and mixing data
-    #Xtrain,Ytrain=rand_shuffle(Xtrain,Ytrain) 
-    #Xvalid,Yvalid=rand_shuffle(Xvalid,Yvalid)
-    #Xtest,Ytest=rand_shuffle(Xtest,Ytest)
+    #Xtrain,Ytrain=rand_shuffle(Xtrain,Ytrain,rng_seed) 
+    #Xtest,Ytest=rand_shuffle(Xtest,Ytest,rng_seed)
 
     #flatten into 1D array 
     
@@ -71,13 +70,15 @@ def fllat(A):
     B=A.reshape(shp[0],-1) #flat all except the first dimension
     return B
 
-def rand_shuffle(A,B):
+def rand_shuffle(A,B,sd):
     """
     randomly mixing/shuffing the positive and negative example
     A: image data
     B: corresponding label
+    sd: randon number generator seed
     """
     print("randomly shuffle data...")
+    numpy.random.seed(sd)
     ss=range(len(A))
     numpy.random.shuffle(ss)
     A=A[ss]
