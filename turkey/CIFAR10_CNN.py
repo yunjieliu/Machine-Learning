@@ -25,7 +25,7 @@ t=tensor.matrix()
 
 
 #CNN model
-
+#two conv followed by two max pool, then 2 fully connect
 def CNN(x,c_l1,c_l2,f_l1,f_l2):
     conv1=tensor.nnet.relu(conv2d(x,c_l1)) #default stride=1 --subsample=(1,1) 
     pool1=pool_2d(conv1,(2,2),st=(2,2),ignore_border=True)  #default maxpool
@@ -41,7 +41,7 @@ def CNN(x,c_l1,c_l2,f_l1,f_l2):
 #NOTE, here need to calculate the dimension of input/output feature size
 c_l1_shp=((16,3,5,5)) #number of kernel, input channel, kernel size
 c_l1=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(c_l1_shp)).reshape(c_l1_shp),name='c_l1')
-mc_l1=theano.shared(numpy.zeros(c_l1_shp),name='mc_l1')
+mc_l1=theano.shared(numpy.zeros(c_l1_shp),name='mc_l1') #velocity initialize 0
 c_l2_shp=((32,16,5,5))
 c_l2=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(c_l2_shp)).reshape(c_l2_shp),name='c_l2')
 mc_l2=theano.shared(numpy.zeros(c_l2_shp),name='mc_l2')
@@ -58,13 +58,15 @@ label_predict=tensor.argmax(ppyx,axis=1)
 
 cost=tensor.mean(tensor.nnet.categorical_crossentropy(ppyx,t))
 grad=tensor.grad(cost,[c_l1,c_l2,f_l1,f_l2])
-lr=0.01
-momentum=0.9
 
-updates=[(mc_l1,mc_l1*momentum-lr*grad[0]),(c_l1,c_l1+mc_l1),
-(mc_l2,mc_l2*momentum-lr*grad[1]),(c_l2,c_l2+mc_l2),
-(mf_l1,mf_l1*momentum-lr*grad[2]),(f_l1,f_l1+mf_l1),
-(mf_l2,mf_l2*momentum-lr*grad[3]),(f_l2,f_l2+mf_l2)]
+lr=0.01  #learning rate
+momentum=0.9 #momentum coefficient
+wdecay=0.005  #weight decay
+
+updates=[(mc_l1,mc_l1*momentum-lr*(grad[0]+wdecay*c_l1)),(c_l1,c_l1+mc_l1),
+(mc_l2,mc_l2*momentum-lr*(grad[1]+wdecay*c_l2)),(c_l2,c_l2+mc_l2),
+(mf_l1,mf_l1*momentum-lr*(grad[2]+wdecay*f_l1)),(f_l1,f_l1+mf_l1),
+(mf_l2,mf_l2*momentum-lr*(grad[3]+wdecay*f_l2)),(f_l2,f_l2+mf_l2)]
 
 #function
 train=theano.function([x,t],cost,updates=updates)
