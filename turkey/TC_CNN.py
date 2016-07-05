@@ -115,6 +115,10 @@ while (step_cost >1.0 or i <epoches):
       print "cost %0.8f " %(step_cost)
 
       if i%2 ==0:
+         label_predict=predict(X_valid)
+         accuracy=numpy.mean(label_predict==label_valid)
+         print "Validating accuracy %0.8f " %accuracy
          label_predict=predict(X_train[:2000])
          accuracy=numpy.mean(label_predict==label_train[:2000])
-         print "Training accuracy %0.8f " %accuracy
+         print "Training accuracy  %0.8f " %accuracy
+        
