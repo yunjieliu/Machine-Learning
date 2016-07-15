@@ -8,7 +8,7 @@ Training and validating model
 #lots of module to import
 import numpy, ipdb, neon,datetime
 import data_load  #personalized data load module
-from neon.data import DataIterator
+from neon.data import ArrayIterator
 from neon.util.argparser import NeonArgparser
 from neon.initializers import Uniform, Constant
 from neon.callbacks.callbacks import Callbacks, MetricCallback, LossCallback
@@ -50,8 +50,8 @@ parser.set_defaults(
        evaluation_freq=2,
 
        #data
-       epochs= 2,
-       batch_size=100,
+       epochs= 10,
+       batch_size=128,
        data_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/DATA/",
        file_name="hurricanes.h5",
        nclass=2,
@@ -68,11 +68,11 @@ parser.set_defaults(
 
 
        # results
-       out_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/hurricane/",
-       save_path="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/hurricane/hurricane_classify_train.pkl",
-       serialize= 2,
-       logfile="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/hurricane/hurricane_classify_train."+c_time+".log",
-       output_file="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/hurricane/hurricane_classify_train."+c_time+".h5",
+       #out_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/hurricane/",
+       #save_path="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/hurricane/hurricane_classify_train.pkl",
+       #serialize= 2,
+       #logfile="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/hurricane/hurricane_classify_train."+c_time+".log",
+       #output_file="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/hurricane/hurricane_classify_train."+c_time+".h5",
 ) 
 
 args = parser.parse_args()
@@ -89,9 +89,9 @@ data loading and sort training, validating and testing
                                   args.train_num_n,args.valid_num_n,args.test_num_n,
                                   args.norm_type,normalize=True)
 
-train=DataIterator(X_train,Y_train,nclass=args.nclass,lshape=(8,32,32))
-valid=DataIterator(X_valid,Y_valid,nclass=args.nclass,lshape=(8,32,32))
-test=DataIterator(X_test,Y_test,nclass=args.nclass,lshape=(8,32,32))
+train=ArrayIterator(X_train,Y_train,nclass=args.nclass,lshape=(8,32,32))
+valid=ArrayIterator(X_valid,Y_valid,nclass=args.nclass,lshape=(8,32,32))
+test=ArrayIterator(X_test,Y_test,nclass=args.nclass,lshape=(8,32,32))
 
 logger.info("load data complete...")
 """
@@ -119,7 +119,7 @@ layers.append(Conv((5, 5, 16), init=init_uni, activation=Rectlin(),batch_norm=Fa
 layers.append(Pooling((2, 2),strides=2))
 layers.append(Conv((5, 5, 32), init=init_uni,activation=Rectlin(), batch_norm=False))
 layers.append(Pooling((2, 2),strides=2))
-layers.append(Affine(nout=50, init=init_uni,activation=Rectlin(), batch_norm=False))
+layers.append(Affine(nout=500, init=init_uni,activation=Rectlin(), batch_norm=False))
 layers.append(Affine(nout=2, init=init_uni, activation=Logistic()))
 
 #cost function
@@ -137,12 +137,12 @@ model training and classification accurate rate
 """
 #model training and results
 
-callbacks = Callbacks(mlp,train, args, eval_set=valid,metric=Misclassification())
+callbacks = Callbacks(mlp, eval_set=valid,metric=Misclassification())
 
 #add lost and metric call backs facilitate more diagnostic
 
-callbacks.add_callback(MetricCallback(mlp,eval_set=train,metric=Misclassification(),epoch_freq=args.evaluation_freq))
-callbacks.add_callback(MetricCallback(mlp,eval_set=valid,metric=Misclassification(),epoch_freq=args.evaluation_freq))
+#callbacks.add_callback(MetricCallback(mlp,eval_set=train,metric=Misclassification(),epoch_freq=args.evaluation_freq))
+#callbacks.add_callback(MetricCallback(mlp,eval_set=valid,metric=Misclassification(),epoch_freq=args.evaluation_freq))
 #run the model
 
 mlp.fit(train, optimizer=opt_gdm, num_epochs=args.epochs, cost=cost, callbacks=callbacks)
