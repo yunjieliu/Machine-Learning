@@ -9,13 +9,22 @@ from theano.tensor.signal.pool import pool_2d
 import numpy
 import  data_load
 
+import logging
+logger=logging.getLogger('model')
+handler=logging.StreamHandler()
+formatter=logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel("INFO")
+
 #********************************************
 #misc information
 rng_seed=2
+numpy.random.seed(rng_seed)
 data_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/DATA/"
 file_name="atmospheric_river_us+eu+landsea_sep10.h5"
 data_dict=["AR","Non_AR"] #group name of positive and negative examples
-train_num_p=train_num_n=1000  #positive and negative training example
+train_num_p=train_num_n= 5000  #positive and negative training example
 valid_num_p=800
 valid_num_n=500
 test_num_p=test_num_n=1000     #positive and negative testing example
@@ -68,10 +77,10 @@ mc_l1=theano.shared(numpy.zeros(c_l1_shp),name='mc_l1') #velocity initialize 0
 c_l2_shp=((16,8,12,12))
 c_l2=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(c_l2_shp)).reshape(c_l2_shp),name='c_l2')
 mc_l2=theano.shared(numpy.zeros(c_l2_shp),name='mc_l2')
-f_l1_shp=((16*11*20),500)
+f_l1_shp=((16*11*20),200)
 f_l1=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(f_l1_shp)).reshape(f_l1_shp),name='f_l1')
 mf_l1=theano.shared(numpy.zeros(f_l1_shp),name='mf_l1')
-f_l2_shp=(500,2)
+f_l2_shp=(200,2)
 f_l2=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(f_l2_shp)).reshape(f_l2_shp),name='f_l2')
 mf_l2=theano.shared(numpy.zeros(f_l2_shp),name='mf_l2')
 
@@ -82,9 +91,9 @@ label_predict=tensor.argmax(ppyx,axis=1)
 cost=tensor.mean(tensor.nnet.binary_crossentropy(ppyx,t))
 grad=tensor.grad(cost,[c_l1,c_l2,f_l1,f_l2])
 
-lr=0.05  #learning rate
+lr=0.03  #learning rate
 momentum=0.9 #momentum coefficient
-wdecay=0.005  #weight decay
+wdecay=0.001  #weight decay
 
 updates=[(mc_l1,mc_l1*momentum-lr*(grad[0]+wdecay*c_l1)),(c_l1,c_l1+mc_l1),
 (mc_l2,mc_l2*momentum-lr*(grad[1]+wdecay*c_l2)),(c_l2,c_l2+mc_l2),
@@ -100,24 +109,27 @@ predict=theano.function([x],label_predict)
 
 #train model
 step_cost=100.0
-batch_size=128
-epoches=10
+batch_size=100
+epoches=50
 
 i=0
-while (step_cost >1.0 or i <epoches):
+while (step_cost >0.2 or i <epoches):
       icost=[]
-      print "iteration %d " %i
+      logger.info( "iteration %d " %i)
       for batch in range(0,len(X_train),batch_size):
-          print batch
           X_batch=X_train[batch:batch+batch_size]
           Y_batch=Y_train[batch:batch+batch_size]
           icost.append(float(train(X_batch,Y_batch)))
   
       i=i+1
       step_cost=numpy.mean(icost)
-      print "cost %0.8f " %(step_cost)
+      logger.info("cost %0.8f " %(step_cost))
 
-      if i%2 ==0:
-         label_predict=predict(X_train[:2000])
-         accuracy=numpy.mean(label_predict==label_train[:2000])
-         print "Training accuracy %0.8f " %accuracy
+      if i%1 ==0:
+         label_predict=predict(X_valid)
+         accuracy=numpy.mean(label_predict==label_valid)
+         logger.info("Validating accuracy %0.8f " %accuracy)
+         label_predict=predict(X_train)
+         logger.info("thus far")
+         accuracy=numpy.mean(label_predict==label_train)
+         logger.info("Training accuracy  %0.8f " %accuracy)
