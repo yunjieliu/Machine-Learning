@@ -11,11 +11,12 @@ import  data_load
 
 #********************************************
 #misc information
-rng_seed=2
-data_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/DATA/"
+rng_seed=3
+numpy.random.seed(rng_seed)
+data_dir="/global/project/projectdirs/nervana/yunjie/climatedata/old/"
 file_name="fronts_all.h5"
 data_dict=["Front","NonFront"] #group name of positive and negative examples
-train_num_p=train_num_n=1000  #positive and negative training example
+train_num_p=train_num_n=4000  #positive and negative training example
 valid_num_p=valid_num_n=600
 test_num_p=test_num_n=1000     #positive and negative testing example
 
@@ -64,13 +65,13 @@ def CNN(x,c_l1,c_l2,f_l1,f_l2):
 c_l1_shp=((16,3,5,5)) #number of kernel, input channel, kernel size
 c_l1=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(c_l1_shp)).reshape(c_l1_shp),name='c_l1')
 mc_l1=theano.shared(numpy.zeros(c_l1_shp),name='mc_l1') #velocity initialize 0
-c_l2_shp=((32,16,5,5))
+c_l2_shp=((16,16,5,5))
 c_l2=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(c_l2_shp)).reshape(c_l2_shp),name='c_l2')
 mc_l2=theano.shared(numpy.zeros(c_l2_shp),name='mc_l2')
-f_l1_shp=((32*3*12),500)
+f_l1_shp=((16*3*12),400)
 f_l1=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(f_l1_shp)).reshape(f_l1_shp),name='f_l1')
 mf_l1=theano.shared(numpy.zeros(f_l1_shp),name='mf_l1')
-f_l2_shp=(500,2)
+f_l2_shp=(400,2)
 f_l2=theano.shared(numpy.random.uniform(-0.1,0.1,numpy.prod(f_l2_shp)).reshape(f_l2_shp),name='f_l2')
 mf_l2=theano.shared(numpy.zeros(f_l2_shp),name='mf_l2')
 
@@ -81,9 +82,9 @@ label_predict=tensor.argmax(ppyx,axis=1)
 cost=tensor.mean(tensor.nnet.binary_crossentropy(ppyx,t))
 grad=tensor.grad(cost,[c_l1,c_l2,f_l1,f_l2])
 
-lr=0.01  #learning rate
-momentum=0.9 #momentum coefficient
-wdecay=0.005  #weight decay
+lr=0.0107  #learning rate
+momentum= 0.9  #0.979 #momentum coefficient
+wdecay= 0.0005 #0.00107  #weight decay
 
 updates=[(mc_l1,mc_l1*momentum-lr*(grad[0]+wdecay*c_l1)),(c_l1,c_l1+mc_l1),
 (mc_l2,mc_l2*momentum-lr*(grad[1]+wdecay*c_l2)),(c_l2,c_l2+mc_l2),
@@ -96,14 +97,13 @@ updates=[(mc_l1,mc_l1*momentum-lr*(grad[0]+wdecay*c_l1)),(c_l1,c_l1+mc_l1),
 train=theano.function([x,t],cost,updates=updates)
 predict=theano.function([x],label_predict)
 
-
 #train model
 step_cost=100.0
-batch_size=128
-epoches=10
+batch_size=100
+epoches=50
 
 i=0
-while (step_cost >1.0 or i <epoches):
+while (step_cost >0.2 or i <epoches):
       icost=[]
       print "iteration %d " %i
       for batch in range(0,len(X_train),batch_size):
@@ -114,11 +114,10 @@ while (step_cost >1.0 or i <epoches):
       step_cost=numpy.mean(icost)
       print "cost %0.8f " %(step_cost)
 
-      if i%2 ==0:
+      if i%5 ==0:
          label_predict=predict(X_valid)
          accuracy=numpy.mean(label_predict==label_valid)
          print "Validating accuracy %0.8f " %accuracy
-         label_predict=predict(X_train[:2000])
-         accuracy=numpy.mean(label_predict==label_train[:2000])
+         label_predict=predict(X_train)
+         accuracy=numpy.mean(label_predict==label_train)
          print "Training accuracy  %0.8f " %accuracy
-        
