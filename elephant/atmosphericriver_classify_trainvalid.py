@@ -6,7 +6,7 @@ Atmospheric River event classification NOEN model
 """
 import numpy, ipdb, neon,datetime
 import data_load  #personalized data load module
-from neon.data import DataIterator
+from neon.data import ArrayIterator
 from neon.util.argparser import NeonArgparser
 from neon.initializers import Uniform, Constant
 from neon.callbacks.callbacks import Callbacks, MetricCallback, LossCallback
@@ -65,11 +65,11 @@ parser.set_defaults(
        test_num_n=1000,        
        
        #output files
-       out_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/atmosphericriver/",
-       save_path="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/atmosphericriver/ar_classify_train.pkl",
+       #out_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/atmosphericriver/",
+       #save_path="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/atmosphericriver/ar_classify_train.pkl",
        #serialize= 2,
-       logfile="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/atmosphericriver/ar_classify_train."+c_time+".log",
-       output_file="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/atmosphericriver/ar_classify_train."+c_time+".h5",
+       #logfile="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/atmosphericriver/ar_classify_train."+c_time+".log",
+       #output_file="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/RESULTS/atmosphericriver/ar_classify_train."+c_time+".h5",
 )
 
 args = parser.parse_args()
@@ -88,9 +88,9 @@ data loading and sort training, validating and testing
                                   args.train_num_n,args.valid_num_n,args.test_num_n,
                                   args.norm_type,normalize=True)
 
-train=DataIterator(X_train,Y_train,nclass=args.nclass,lshape=(2,148,224))
-valid=DataIterator(X_valid,Y_valid,nclass=args.nclass,lshape=(2,148,224))
-#test=DataIterator(X_test,Y_test,nclass=args.nclass,lshape=(2,148,224))
+train=ArrayIterator(X_train,Y_train,nclass=args.nclass,lshape=(2,148,224))
+valid=ArrayIterator(X_valid,Y_valid,nclass=args.nclass,lshape=(2,148,224))
+#test=ArrayIterator(X_test,Y_test,nclass=args.nclass,lshape=(2,148,224))
 
 logger.info("load data complete...")
 
@@ -107,10 +107,10 @@ init_uni = Uniform(low=-0.1, high=0.1)
 
 #learning rule
 
-opt_gdm = GradientDescentMomentum(learning_rate=0.05,
-                                  momentum_coef=0.8,
+opt_gdm = GradientDescentMomentum(learning_rate=0.03,
+                                  momentum_coef=0.9,
                                   stochastic_round=args.rounding,
-                                  wdecay=0.0005)
+                                  wdecay=0.001)
 
 #model layers and its activation
 
@@ -137,7 +137,7 @@ model training and classification accurate rate
 """
 #model training and results
 
-callbacks= Callbacks(mlp, train, args, eval_set=train)
+callbacks= Callbacks(mlp, eval_set=valid,metric=Misclassification())
 
 #callbacks.add_callback(MetricCallback(mlp,eval_set=train,metric=Misclassification(),epoch_freq=args.evaluation_freq))
 #callbacks.add_callback(MetricCallback(mlp,eval_set=valid,metric=Misclassification(),epoch_freq=args.evaluation_freq))
