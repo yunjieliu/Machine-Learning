@@ -7,11 +7,13 @@ from theano import tensor
 from theano.tensor.nnet import conv2d
 from theano.tensor.signal.pool import pool_2d
 import numpy
+import pickle
 import  data_load
 
 #********************************************
 #misc information
 rng_seed=2
+numpy.random.seed(rng_seed)
 data_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/DATA/"
 file_name="hurricanes.h5"
 data_dict=["1","0"] #group name of positive and negative examples
@@ -19,7 +21,7 @@ train_num_p=train_num_n=8000  #positive and negative training example
 valid_num_p=valid_num_n=1000
 test_num_p=test_num_n=1000     #positive and negative testing example
 
-norm_type= 2    # #1: global contrast norm, 2:standard norm, 3:l1/l2 norm, scikit learn
+norm_type= 3    # #1: global contrast norm, 2:standard norm, 3:l1/l2 norm, scikit learn
 
 #*********************************************
 #get training , testing data
@@ -101,6 +103,9 @@ predict=theano.function([x],label_predict)
 step_cost=100.0
 batch_size=128
 epoches=10
+train_weights=dict()
+
+
 
 i=0
 while (step_cost >1.0 or i <epoches):
@@ -113,12 +118,21 @@ while (step_cost >1.0 or i <epoches):
       i=i+1
       step_cost=numpy.mean(icost)
       print "cost %0.8f " %(step_cost)
-
-      if i%2 ==0:
+      
+      print fcl1.get_value()[0,0,...]
+      if i%10 ==0:
          label_predict=predict(X_valid)
          accuracy=numpy.mean(label_predict==label_valid)
          print "Validating accuracy %0.8f " %accuracy
-         label_predict=predict(X_train[:2000])
-         accuracy=numpy.mean(label_predict==label_train[:2000])
-         print "Training accuracy  %0.8f " %accuracy
-        
+         #label_predict=predict(X_train[:2000])
+         #accuracy=numpy.mean(label_predict==label_train[:2000])
+         #print "Training accuracy  %0.8f " %accuracy
+         """
+         #save trained weights at the end
+         train_weights['conv1']=fcl1.get_value()
+         train_weights['conv2']=fcl2.get_value()
+         train_weights['full1']=ffl1.get_value()
+         train_weights['full2']=ffl2.get_value()
+         with open("TC_trained_weights_"+str(i)+".pkl","w") as fid:
+              pickle.dump(train_weights,fid)
+         """      
