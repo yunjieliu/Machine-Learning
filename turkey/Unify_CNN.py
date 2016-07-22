@@ -96,26 +96,24 @@ def spp(feature,feature_size,pyramid,pool_type='max'):
 def get_pool_output_shape(mapsize,pool_size,st,ignore_border):
     """
     calculate feature map shape after pooling operation
-    mapsize: input feature map size (feature map, height, width)
+    mapsize: input feature map size (batchsize,feature map, height, width)
     pool_size: pooling window
     st: pooling stride
     ignore_border: same as pool_2d
     """
-    assert len(mapsize) ==3  #(maps,height,weight)
+    assert len(mapsize) ==4  #(batchsize,maps,height,weight)
     if ignore_border:
        out=((mapsize[-2]-pool_size[0])/st[0]+1,(mapsize[-1]-pool_size[1])/st[1]+1)
     else:
        out=((mapsize[-2]-pool_size[0])/st[0]+2,(mapsize[-1]-pool_size[1])/st[1]+2)
 
-    return (mapsize[:1]+out)
+    return (mapsize[:2]+out)
 
 
 
 #two conv followed by two max pool, then 2 fully connect
-def CNN(x,c_l1,c_l2,f_l1,f_l2,PP,b,ims):
-    print ims.get_value()
-    print b.get_value()
-    ims=(b.get_value())+ims.get_value()  #include batch size in the computing
+def CNN(x,c_l1,c_l2,f_l1,f_l2,PP,bs=128,imss=(3,32,32)):
+    ims=tuple(numpy.hstack((b,imss)))  #include batch size in the computing
     print ims
     conv1=tensor.nnet.relu(conv2d(x,c_l1)) #default stride=1 --subsample=(1,1) 
     conv1_shp=get_conv_output_shape(ims,c_l1.get_value().shape,border_mode='valid',subsample=(1,1))
@@ -144,9 +142,9 @@ rng_seed=2
 data_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/DATA/"
 file_name="hurricanes.h5"
 data_dict=["1","0"] #group name of positive and negative examples
-train_num_p=train_num_n=25  #positive and negative training example
-valid_num_p=valid_num_n=23
-test_num_p=test_num_n=12     #positive and negative testing example
+train_num_p=train_num_n=128*5  #positive and negative training example
+valid_num_p=valid_num_n=128*5
+test_num_p=test_num_n=128*5     #positive and negative testing example
 
 norm_type= 2    # #1: global contrast norm, 2:standard norm, 3:l1/l2 norm, scikit learn
 
@@ -168,10 +166,10 @@ label_valid=numpy.argmax(Y_valid,axis=1)
 label_test=numpy.argmax(Y_test,axis=1)
 
 #define symbolic in theano
-x=tensor.tensor4()
-t=tensor.matrix()
-b=tensor.scalar()
-ims=tensor.matrix()
+x=tensor.tensor4('x')
+t=tensor.matrix('t')
+b=tensor.lscalar('b')
+ims=tensor.ivector('ims')
 
 #********************************************
 #Initialize weights, bias etc
@@ -200,11 +198,10 @@ mf_l2=weight_init(f_l2_shp,'velocity','mf_l2')
 
 #some useful parameters
 PP=[(1,1),(2,2),(3,3)] 
-bs=theano.shared(128)   
-imsize=theano.shared((3,32,32))
-
+b=128
+ims=(8,32,32)
 #cost and update strategy, learning rule
-fcl1,fcl2,ffl1,ffl2,ppyx= CNN(x,c_l1,c_l2,f_l1,f_l2,PP,bs,imsize)
+fcl1,fcl2,ffl1,ffl2,ppyx= CNN(x,c_l1,c_l2,f_l1,f_l2,PP,b,ims)
 label_predict=tensor.argmax(ppyx,axis=1)
 
 cost=tensor.mean(tensor.nnet.binary_crossentropy(ppyx,t))
@@ -220,12 +217,12 @@ updates=update_scheme(lr,mom,wdecay,params,cost,velocity)
 
 #*************************************************
 #function
-train=theano.function([x,t,bs,imsize],cost,updates=updates)
+train=theano.function([x,t],cost,updates=updates)
 predict=theano.function([x],label_predict)
 
 #train model
 step_cost=100.0
-batch_size=2
+batch_size=128
 epoches=10
 
 i=0
@@ -235,18 +232,19 @@ while (step_cost >1.0 or i <epoches):
       for batch in range(0,len(X_train),batch_size):
           X_batch=X_train[batch:batch+batch_size]
           Y_batch=Y_train[batch:batch+batch_size]
-          bsize=batch_size
-          image_size=X_batch[0].shape
-          icost.append(float(train(X_batch,Y_batch,bsize,image_size)))
+          icost.append(float(train(X_batch,Y_batch)))
       i=i+1
       step_cost=numpy.mean(icost)
       print "cost %0.8f " %(step_cost)
 
       if i%2 ==0:
-         label_predict=predict(X_valid[:100])
-         accuracy=numpy.mean(label_predict==label_valid[:100])
+         label_predict=predict(X_valid[:batch_size])
+         accuracy=numpy.mean(label_predict==label_valid[:batch_size])
          print "Validating accuracy %0.8f " %accuracy
-         label_predict=predict(X_train[:100])
-         accuracy=numpy.mean(label_predict==label_train[:100])
+         label_predict=predict(X_train[:batch_size])
+         accuracy=numpy.mean(label_predict==label_train[:batch_size])
          print "Training accuracy  %0.8f " %accuracy
-        
+
+#the Spatial Pyramid Pooling layer works, the only thing that is wierd about this code is that the training/testing data size has to be interger multiplication
+#of batch size. Not generally enough. Might need to redesign the code structure.
+
