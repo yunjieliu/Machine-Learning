@@ -87,7 +87,7 @@ def spp(feature,feature_size,pyramid,pool_type='max'):
         stride_w=int(math.floor(float(width)/pyramid_level[1]))
         pout=pool_2d(feature,(kernel_h,kernel_w),st=(stride_h,stride_w),mode=pool_type,ignore_border=True) 
         ppp=get_pool_output_shape(feature_size,(kernel_h,kernel_w),(stride_h,stride_w),ignore_border=True)
-        print ppp 
+        print pout 
         poutt=tensor.reshape(pout,(feature_size[:2]+(numpy.prod(pyramid_level),)))
         temp.append(poutt)
         
@@ -112,8 +112,7 @@ def get_pool_output_shape(mapsize,pool_size,st,ignore_border):
 
 
 #two conv followed by two max pool, then 2 fully connect
-def CNN(x,c_l1,c_l2,f_l1,f_l2,PP,bs=128,imss=(3,32,32)):
-    ims=tuple(numpy.hstack((b,imss)))  #include batch size in the computing
+def CNN(x,c_l1,c_l2,f_l1,f_l2,PP,ims):
     print ims
     conv1=tensor.nnet.relu(conv2d(x,c_l1)) #default stride=1 --subsample=(1,1) 
     conv1_shp=get_conv_output_shape(ims,c_l1.get_value().shape,border_mode='valid',subsample=(1,1))
@@ -168,8 +167,6 @@ label_test=numpy.argmax(Y_test,axis=1)
 #define symbolic in theano
 x=tensor.tensor4('x')
 t=tensor.matrix('t')
-b=tensor.lscalar('b')
-ims=tensor.ivector('ims')
 
 #********************************************
 #Initialize weights, bias etc
@@ -197,11 +194,10 @@ mf_l2=weight_init(f_l2_shp,'velocity','mf_l2')
 
 
 #some useful parameters
-PP=[(1,1),(2,2),(3,3)] 
-b=128
-ims=(8,32,32)
+PP=[(3,3),(2,2),(1,1)]
+ims=(128,3,32,32)
 #cost and update strategy, learning rule
-fcl1,fcl2,ffl1,ffl2,ppyx= CNN(x,c_l1,c_l2,f_l1,f_l2,PP,b,ims)
+fcl1,fcl2,ffl1,ffl2,ppyx= CNN(x,c_l1,c_l2,f_l1,f_l2,PP,ims)
 label_predict=tensor.argmax(ppyx,axis=1)
 
 cost=tensor.mean(tensor.nnet.binary_crossentropy(ppyx,t))
@@ -223,7 +219,7 @@ predict=theano.function([x],label_predict)
 #train model
 step_cost=100.0
 batch_size=128
-epoches=10
+epoches=20
 
 i=0
 while (step_cost >1.0 or i <epoches):
@@ -232,12 +228,13 @@ while (step_cost >1.0 or i <epoches):
       for batch in range(0,len(X_train),batch_size):
           X_batch=X_train[batch:batch+batch_size]
           Y_batch=Y_train[batch:batch+batch_size]
+          ims=X_batch.shape
           icost.append(float(train(X_batch,Y_batch)))
       i=i+1
       step_cost=numpy.mean(icost)
       print "cost %0.8f " %(step_cost)
 
-      if i%2 ==0:
+      if i%5 ==0:
          label_predict=predict(X_valid[:batch_size])
          accuracy=numpy.mean(label_predict==label_valid[:batch_size])
          print "Validating accuracy %0.8f " %accuracy
@@ -247,3 +244,4 @@ while (step_cost >1.0 or i <epoches):
 
 #the Spatial Pyramid Pooling layer works, the only thing that is wierd about this code is that the training/testing data size has to be interger multiplication
 #of batch size. Not generally enough. Might need to redesign the code structure.
+#Seems like it is not possible to pass the training data size (batch, channel, width, height) from theano function down the lin from theano function down the linee as an array. Theano function takes tensor.varaible as input, hard to get actual value of variables down the line. There must be other way to do so
