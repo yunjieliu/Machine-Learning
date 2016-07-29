@@ -89,6 +89,7 @@ def spp(feature,feature_size,pyramid,pool_type='max'):
         pout=pool_2d(feature,(kernel_h,kernel_w),st=(stride_h,stride_w),mode=pool_type,ignore_border=True) 
         ppp=get_pool_output_shape(feature_size,(kernel_h,kernel_w),(stride_h,stride_w),ignore_border=True)
         print ppp 
+        print feature_size[:2]+(numpy.prod(pyramid_level),) 
         poutt=tensor.reshape(pout,(feature_size[:2]+(numpy.prod(pyramid_level),)))
         temp.append(poutt)
         
@@ -115,9 +116,14 @@ def get_pool_output_shape(mapsize,pool_size,st,ignore_border):
 #two conv followed by two max pool, then 2 fully connect
 def CNN(x,c_l1,c_l2,f_l1,f_l2,PP,ims):
     print ims
-    #check conv3D, looks like theano does not like it to convert 3d conv feature to 2d conv feature
-    #conv1=tensor.nnet.relu(conv3D(x.dimshuffle(0,2,3,1,'x'),c_l1.dimshuffle(0,2,3,1,'x'),b=0,d=(1,1,1))) # shuffle dimensions
-    
+    #-------
+    #conv3D get rid of dependency of the number of input image channel
+    b=numpy.zeros(c_l1.get_value().shape[0])
+    conv1=tensor.nnet.relu(conv3D(x.dimshuffle(0,2,3,1,'x'),c_l1.dimshuffle(0,2,3,1,'x'),b,d=(1,1,1))) # shuffle dimensions
+    conv1=tensor.sum(conv1,axis=3) #add the dimension of channels
+    conv1=conv1.dimshuffle(0,3,1,2) #shuffle back to same dimension as conv2D
+    #---------
+
     #conv1=tensor.nnet.relu(conv2d(x,c_l1)) #default stride=1 --subsample=(1,1) 
     conv1_shp=get_conv_output_shape(ims,c_l1.get_value().shape,border_mode='valid',subsample=(1,1))
     print  conv1_shp
@@ -125,13 +131,14 @@ def CNN(x,c_l1,c_l2,f_l1,f_l2,PP,ims):
     #pp=tensor.reshape(conv1,conv1_shp[:2]+(conv1_shp[2]*conv1_shp[3],))
     #print pp 
 
-    print conv1.ndim
     pool1=pool_2d(conv1,(2,2),st=(2,2),ignore_border=True)  #default maxpool
     pool1_shp=get_pool_output_shape(conv1_shp,pool_size=(2,2),st=(2,2),ignore_border=True)
     print pool1_shp
+
     conv2=tensor.nnet.relu(conv2d(pool1,c_l2))
     conv2_shp=get_conv_output_shape(pool1_shp,c_l2.get_value().shape,border_mode='valid',subsample=(1,1))   
     print conv2_shp
+
     #pool2=pool_2d(conv2,(2,2),st=(2,2),ignore_border=True)
     pool2=spp(conv2,conv2_shp,PP,'max')
 
@@ -284,10 +291,12 @@ while (step_cost >1.0 or i <epoches):
              Y_batch=Hy_train[bb*batch_size:(bb+1)*batch_size]
              iii=X_batch.shape
              icost.append(float(train(X_batch,Y_batch)))
+             print 'done 1'
           if bb<=A_minibatch:
              X_batch=Ax_train[bb*batch_size:(bb+1)*batch_size]
              Y_batch=Ay_train[bb*batch_size:(bb+1)*batch_size]
              icost.append(float(train(X_batch,Y_batch)))
+             print "done 2"
           if bb<=F_minibatch:
              X_batch=Fx_train[bb*batch_size:(bb+1)*batch_size]
              Y_batch=Fy_train[bb*batch_size:(bb+1)*batch_size]
