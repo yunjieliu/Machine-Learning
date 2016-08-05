@@ -4,9 +4,29 @@ Lasagne CNN for TC
 import theano
 from theano import tensor
 import lasagne
+from collections import OrderedDict
 import numpy
 import data_load
 
+
+
+def sgd_w(loss_or_grads, params, learning_rate,decay=0):
+    """
+    more general sgd with weight decay
+    """
+    grads = lasagne.updates.get_or_compute_grads(loss_or_grads, params)
+    updates = OrderedDict()
+
+    for param, grad in zip(params, grads):
+        updates[param] = param - learning_rate * grad -learning_rate*decay*param
+
+    return updates   
+
+def momentum_decay(loss_or_grads, params, learning_rate, momentum=0.9,decay=0.01):
+
+    updates = sgd_w(loss_or_grads, params, learning_rate, decay)
+    return lasagne.updates.apply_momentum(updates, momentum=momentum) 
+    
 
 def CNN(input_var):
     """
@@ -76,13 +96,14 @@ label_predict=tensor.argmax(prediction,axis=1)
 #will results in the form implementes in neon, where directly apply weight decay on weights, rather than through 
 #loss function
 loss= lasagne.objectives.binary_crossentropy(prediction, target_var)
-layers = {Conv1: 0.005, Conv2: 0.005, Full1: 0.005,  convnet:0.005}
-decay_reg=lasagne.regularization.regularize_layer_params(layers,lasagne.regularization.l1)
-loss=loss+decay_reg
+#layers = {Conv1: 0.005, Conv2: 0.005, Full1: 0.005,  convnet:0.005}
+#decay_reg=lasagne.regularization.regularize_layer_params(layers,lasagne.regularization.l1)
+#loss=loss+decay_reg
 loss=loss.mean() 
 
 params=lasagne.layers.get_all_params(convnet,trainable=True)
-updates=lasagne.updates.momentum(loss,params,learning_rate=0.01,momentum=0.9)
+#updates=lasagne.updates.momentum(loss,params,learning_rate=0.01,momentum=0.9)
+updates=momentum_decay(loss,params,learning_rate=0.01,momentum=0.9,decay=0.01)
 
 #train function
 train=theano.function([input_var,target_var],loss,updates=updates)
