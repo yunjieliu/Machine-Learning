@@ -9,7 +9,6 @@ import numpy
 import data_load
 
 
-
 def sgd_w(loss_or_grads, params, learning_rate,decay=0):
     """
     more general sgd with weight decay
@@ -96,9 +95,14 @@ label_predict=tensor.argmax(prediction,axis=1)
 #will results in the form implementes in neon, where directly apply weight decay on weights, rather than through 
 #loss function
 loss= lasagne.objectives.binary_crossentropy(prediction, target_var)
-#layers = {Conv1: 0.005, Conv2: 0.005, Full1: 0.005,  convnet:0.005}
-#decay_reg=lasagne.regularization.regularize_layer_params(layers,lasagne.regularization.l1)
-#loss=loss+decay_reg
+
+"""
+#alternatively, you can add the regularizaiton loss to loss function above.
+#CNN return convnet, will contain all layers before
+#reg_loss=lasagne.regularization.regularize_layer_params(convnet,lasagne.regularization.l2)
+#loss=loss+0.001*reg_loss #0.001 is the weight decay coefficient
+"""
+
 loss=loss.mean() 
 
 params=lasagne.layers.get_all_params(convnet,trainable=True)
@@ -136,4 +140,13 @@ while epoch<num_epochs:
 
          label_predict=predict(X_valid)
          accuracy=numpy.mean(label_predict==label_valid)
-         print "Validating accuracy %0.8f " %accuracy       
+         print "Validating accuracy %0.8f " %accuracy   
+
+
+#when model trained well, save the trained weights
+numpy.savez('TC_CNN.npz', *lasagne.layers.get_all_param_values(convnet)) 
+
+#to load trained weights to model
+#with np.load('TC_CNN.npz') as f:
+#     param_values = [f['arr_%d' % i] for i in range(len(f.files))]
+# lasagne.layers.set_all_param_values(convnet, param_values)  
