@@ -41,16 +41,18 @@ def CNN(input_var):
 
     Pool1=lasagne.layers.MaxPool2DLayer(Conv12,pool_size=(2, 2),stride=None, pad=(0, 0), ignore_border=True,name='pool1')
 
-    Lrn1=lasagne.layers.LocalResponseNormalization2DLayer(Pool1,alpha=0.001,k=1,beta=0.75,n=5)
+    Lrn1=lasagne.layers.LocalResponseNormalization2DLayer(Pool1,alpha=0.001,k=1,beta=0.75,n=3)
 
     Conv2=lasagne.layers.Conv2DLayer(Lrn1,num_filters=64, filter_size=(3, 3), stride=(1, 1), pad=0, \
             nonlinearity=lasagne.nonlinearities.leaky_rectify,W=lasagne.init.GlorotUniform(),name='conv2')
 
     Pool2=lasagne.layers.MaxPool2DLayer(Conv2,pool_size=(2, 2),pad=(0,0),name='pool2')
 
-    Lrn2=lasagne.layers.LocalResponseNormalization2DLayer(Pool2,alpha=0.001,k=1,beta=0.75,n=5)
+    Lrn2=lasagne.layers.LocalResponseNormalization2DLayer(Pool2,alpha=0.001,k=1,beta=0.75,n=3)
 
-    Full1=lasagne.layers.DenseLayer(Lrn2,num_units=2000,nonlinearity=lasagne.nonlinearities.rectify,name='full1')
+    drop1=lasagne.layers.DropoutLayer(Lrn2,p=0.3)
+
+    Full1=lasagne.layers.DenseLayer(drop1,num_units=2048,nonlinearity=lasagne.nonlinearities.rectify,name='full1')
 
     Full2=lasagne.layers.DenseLayer(Full1,num_units=2,nonlinearity=lasagne.nonlinearities.sigmoid,name='full2')
 
