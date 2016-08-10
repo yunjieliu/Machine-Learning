@@ -8,6 +8,22 @@ import numpy
 import data_load
 
 
+def sgd_w(loss_or_grads, params, learning_rate,decay=0):
+    """
+    more general sgd with weight decay
+    """
+    grads = lasagne.updates.get_or_compute_grads(loss_or_grads, params)
+    updates = OrderedDict()
+
+    for param, grad in zip(params, grads):
+        updates[param] = param - learning_rate * grad -learning_rate*decay*param
+
+    return updates
+
+def momentum_decay(loss_or_grads, params, learning_rate, momentum=0.9,decay=0.01):
+
+    updates = sgd_w(loss_or_grads, params, learning_rate, decay)
+    return lasagne.updates.apply_momentum(updates, momentum=momentum)
 
 def CNN(input_var):
     """
@@ -18,14 +34,14 @@ def CNN(input_var):
     In=lasagne.layers.InputLayer(shape=(None,2,148,224),input_var=input_var,name='inputlayer')
 
     Conv1=lasagne.layers.Conv2DLayer(In,num_filters=16, filter_size=(5, 5), stride=(1, 1), pad=0, \
-            nonlinearity=lasagne.nonlinearities.rectify,W=lasagne.init.GlorotUniform(),name='conv1')
+            nonlinearity=lasagne.nonlinearities.leaky_rectify,W=lasagne.init.GlorotUniform(),name='conv1')
 
     Pool1=lasagne.layers.MaxPool2DLayer(Conv1,pool_size=(2, 2),stride=None, pad=(0, 0), ignore_border=True,name='pool1')
 
     Lrn1=lasagne.layers.LocalResponseNormalization2DLayer(Pool1,alpha=0.001,k=1,beta=0.75,n=5)
 
     Conv2=lasagne.layers.Conv2DLayer(Lrn1,num_filters=32, filter_size=(5, 5), stride=(1, 1), pad=0, \
-            nonlinearity=lasagne.nonlinearities.rectify,W=lasagne.init.GlorotUniform(),name='conv2')
+            nonlinearity=lasagne.nonlinearities.leaky_rectify,W=lasagne.init.GlorotUniform(),name='conv2')
 
     Pool2=lasagne.layers.MaxPool2DLayer(Conv2,pool_size=(2, 2),name='pool2')
 
@@ -75,7 +91,8 @@ loss= lasagne.objectives.binary_crossentropy(prediction, target_var)
 loss=loss.mean() 
 
 params=lasagne.layers.get_all_params(convnet,trainable=True)
-updates=lasagne.updates.momentum(loss,params,learning_rate=0.01,momentum=0.9)
+#updates=lasagne.updates.momentum(loss,params,learning_rate=0.01,momentum=0.9)
+updates=momentum_decay(loss,params,learning_rate=0.01,momentum=0.9,decay=0.01)
 
 #train function
 train=theano.function([input_var,target_var],loss,updates=updates)
