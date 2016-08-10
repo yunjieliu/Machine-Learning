@@ -35,14 +35,17 @@ def CNN(input_var):
     """
     In=lasagne.layers.InputLayer(shape=(None,8,32,32),input_var=input_var,name='inputlayer')
 
-    Conv1=lasagne.layers.Conv2DLayer(In,num_filters=16, filter_size=(5, 5), stride=(1, 1), pad=0, \
+    Conv1=lasagne.layers.Conv2DLayer(In,num_filters=16, filter_size=(3, 3), stride=(1, 1), pad='same', \
             nonlinearity=lasagne.nonlinearities.leaky_rectify,W=lasagne.init.GlorotUniform(),name='conv1')
+
+    Conv12=lasagne.layers.Conv2DLayer(Conv1,num_filters=32, filter_size=(3, 3), stride=(1, 1), pad='same', \
+            nonlinearity=lasagne.nonlinearities.leaky_rectify,W=lasagne.init.GlorotUniform(),name='conv12')
 
     Pool1=lasagne.layers.MaxPool2DLayer(Conv1,pool_size=(2, 2),stride=None, pad=(0, 0), ignore_border=True,name='pool1')
 
     Lrn1=lasagne.layers.LocalResponseNormalization2DLayer(Pool1,alpha=0.001,k=1,beta=0.75,n=5)
 
-    Conv2=lasagne.layers.Conv2DLayer(Lrn1,num_filters=32, filter_size=(5, 5), stride=(1, 1), pad=0, \
+    Conv2=lasagne.layers.Conv2DLayer(Lrn1,num_filters=64, filter_size=(3, 3), stride=(1, 1), pad=0, \
             nonlinearity=lasagne.nonlinearities.leaky_rectify,W=lasagne.init.GlorotUniform(),name='conv2')
 
     Pool2=lasagne.layers.MaxPool2DLayer(Conv2,pool_size=(2, 2),name='pool2')
