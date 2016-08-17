@@ -40,7 +40,7 @@ def happy_loader(rng_seed,path,fname,groups,train_num_p,valid_num_p,test_num_p,t
     #create label for classes, standard CIFAR style
     Y_train=hotcode(train_num_p,train_num_n)
     #Y_train=numpy.hstack((numpy.ones(train_num_p),numpy.zeros(train_num_n)))
-    
+    print X_train.shape
     X_valid=numpy.vstack((hurricane_positive[train_num_p:train_num_p+valid_num_p],
                           hurricane_negative[train_num_n:train_num_n+valid_num_n]))
     #Y_valid=numpy.hstack((numpy.ones(valid_num_p),numpy.zeros(valid_num_n)))
@@ -67,9 +67,9 @@ def happy_loader(rng_seed,path,fname,groups,train_num_p,valid_num_p,test_num_p,t
           X_test=norm_norm(X_test)
     
     # randomly shuffle data, mixing positive and negative example
-    X_train,Y_train=rand_data(X_train,Y_train)
-    X_valid,Y_valid=rand_data(X_valid,Y_valid)
-    X_test,Y_test=rand_data(X_test,Y_test)
+    X_train,Y_train=rand_data(X_train,Y_train) #only shuffle training data, validating and testing does not matter much
+    #X_valid,Y_valid=rand_data(X_valid,Y_valid)
+    #X_test,Y_test=rand_data(X_test,Y_test)
 
     #flat all input images into feature vector (The ner version of NEON requires data be presented this way)
     #X_train=fllat(X_train)
