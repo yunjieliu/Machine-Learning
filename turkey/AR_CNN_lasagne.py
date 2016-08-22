@@ -73,8 +73,8 @@ numpy.random.seed(rng_seed)
 data_dir="/global/project/projectdirs/nervana/yunjie/climate_neon1.0run/conv/DATA/"
 file_name="atmospheric_river_us+eu+landsea_sep10.h5"
 data_dict=["AR","Non_AR"] #group name of positive and negative examples
-train_num_p=train_num_n=5000  #positive and negative training example
-valid_num_p=valid_num_n=500
+train_num_p=train_num_n=10#5000  #positive and negative training example
+valid_num_p=valid_num_n=5000
 test_num_p=test_num_n=1000  #positive and negative testing example
 
 norm_type= 2    # #1: global contrast norm, 2:standard norm, 3:l1/l2 norm, scikit learn
@@ -89,6 +89,7 @@ norm_type= 2    # #1: global contrast norm, 2:standard norm, 3:l1/l2 norm, sciki
                                  norm_type,normalize=True)
 label_train=numpy.argmax(Y_train,axis=1)
 label_valid=numpy.argmax(Y_valid,axis=1)
+
 #theano variables
 input_var = tensor.tensor4('inputs')
 target_var = tensor.matrix('targets')
@@ -115,7 +116,7 @@ predict=theano.function([input_var],label_predict)
 
 num_epochs=1000
 epoch=0
-batch_size=128
+batch_size=10
 train_loss=0
 train_batch=0
 
@@ -133,13 +134,28 @@ while epoch<num_epochs:
       epoch=epoch+1
       end=time.time()
       logger.info("one epoch use %f seconds " %(end-start)) 
-      if epoch %5 ==0: #then we print out training accuracy
-         label_predict=predict(X_train)
+
+      if epoch %1 ==0: #then we print out training accuracy
+         label_predict=[]
+         for batch in range(0,len(X_train),batch_size):
+             X_batch=X_train[batch:batch+batch_size]
+             label_predict.extend(predict(X_batch))
          accuracy=numpy.mean(label_predict==label_train)
          logger.info("Training accuracy %0.8f " %accuracy)
 
-         label_predict =predict(X_valid) 
+         label_predict=[] #valid accuracy
+         for batch in range(0,len(X_valid),batch_size):
+             X_batch=X_valid[batch:batch+batch_size]
+             label_predict.extend(predict(X_batch))
          accuracy=numpy.mean(label_predict==label_valid)
          logger.info("Validating accuracy %0.8f " %accuracy)
+
+         #label_predict=predict(X_train)
+         #accuracy=numpy.mean(label_predict==label_train)
+         #logger.info("Training accuracy %0.8f " %accuracy)
+         
+         #label_predict =predict(X_valid) 
+         #accuracy=numpy.mean(label_predict==label_valid)
+         #logger.info("Validating accuracy %0.8f " %accuracy)
 
   
